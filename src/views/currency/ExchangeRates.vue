@@ -2,6 +2,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import ExchangeRateInfo from '@/components/common/ExchangeRateInfo/index.vue'
+import { getExchangeRates } from '@/api/modules/currency'
 import type { ExchangeRate, Currency } from '@/types/api/currency'
 
 // 查询参数
@@ -37,75 +38,9 @@ const loadExchangeRates = async () => {
   loading.value = true
 
   try {
-    // 模拟数据
-    const mockRates: ExchangeRate[] = [
-      {
-        id: 1,
-        from_currency: 'USD',
-        to_currency: 'CNY',
-        rate: 7.22,
-        effective_date: '2026-01-17',
-        source: '中国银行',
-        created_at: '2026-01-17T00:00:00Z',
-      },
-      {
-        id: 2,
-        from_currency: 'EUR',
-        to_currency: 'CNY',
-        rate: 7.85,
-        effective_date: '2026-01-17',
-        source: '中国银行',
-        created_at: '2026-01-17T00:00:00Z',
-      },
-      {
-        id: 3,
-        from_currency: 'JPY',
-        to_currency: 'CNY',
-        rate: 0.048,
-        effective_date: '2026-01-17',
-        source: '中国银行',
-        created_at: '2026-01-17T00:00:00Z',
-      },
-      {
-        id: 4,
-        from_currency: 'GBP',
-        to_currency: 'CNY',
-        rate: 9.15,
-        effective_date: '2026-01-17',
-        source: '中国银行',
-        created_at: '2026-01-17T00:00:00Z',
-      },
-      {
-        id: 5,
-        from_currency: 'HKD',
-        to_currency: 'CNY',
-        rate: 0.92,
-        effective_date: '2026-01-17',
-        source: '中国银行',
-        created_at: '2026-01-17T00:00:00Z',
-      },
-      {
-        id: 6,
-        from_currency: 'USD',
-        to_currency: 'CNY',
-        rate: 7.20,
-        effective_date: '2026-01-16',
-        source: '中国银行',
-        created_at: '2026-01-16T00:00:00Z',
-      },
-      {
-        id: 7,
-        from_currency: 'EUR',
-        to_currency: 'CNY',
-        rate: 7.83,
-        effective_date: '2026-01-16',
-        source: '中国银行',
-        created_at: '2026-01-16T00:00:00Z',
-      },
-    ]
-
-    exchangeRatesList.value = mockRates
-    total.value = mockRates.length
+    const { data } = await getExchangeRates(queryParams)
+    exchangeRatesList.value = data.data || []
+    total.value = data.total || 0
   } catch (error) {
     ElMessage.error('加载汇率列表失败')
     console.error(error)

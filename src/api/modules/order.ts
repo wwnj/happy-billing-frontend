@@ -30,12 +30,15 @@ export const getOrderDetail = (orderId: string) => {
  * 取消订单
  */
 export const cancelOrder = (orderId: string) => {
-  return request.put(`/api/v1/orders/${orderId}/cancel`)
+  return request.post(`/api/v1/orders/${orderId}/cancel`)
 }
 
 /**
- * 支付订单
+ * 支付订单（注意：此接口在后端路由中未定义，需要通过创建支付记录实现）
  */
-export const payOrder = (orderId: string) => {
-  return request.post(`/api/v1/orders/${orderId}/pay`)
+export const payOrder = (orderId: string, data: { payment_method: string }) => {
+  return request.post('/api/v1/payments', {
+    order_id: orderId,
+    ...data
+  })
 }

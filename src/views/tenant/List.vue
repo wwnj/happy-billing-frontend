@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
+import { getTenantList } from '@/api/modules/tenant'
 import type { Tenant } from '@/types/api/tenant'
 
 // 查询参数
@@ -21,35 +22,10 @@ const loadTenantList = async () => {
   loading.value = true
 
   try {
-    // 模拟数据
-    const mockTenants: Tenant[] = [
-      {
-        tenant_id: 'tenant_demo_001',
-        tenant_code: 'T001',
-        name: '演示租户001',
-        tenant_type: 'ENTERPRISE',
-        preferred_currency: 'CNY',
-        verified: true,
-        verified_type: 'ENTERPRISE',
-        status: 1,
-        created_at: '2026-01-01T00:00:00Z',
-        updated_at: '2026-01-17T10:00:00Z',
-      },
-      {
-        tenant_id: 'tenant_demo_002',
-        tenant_code: 'T002',
-        name: '演示租户002',
-        tenant_type: 'INDIVIDUAL',
-        preferred_currency: 'USD',
-        verified: false,
-        status: 1,
-        created_at: '2026-01-10T00:00:00Z',
-        updated_at: '2026-01-15T10:00:00Z',
-      },
-    ]
-
-    tenantList.value = mockTenants
-    total.value = mockTenants.length
+    const { data } = await getTenantList(queryParams)
+    // 后端租户列表使用 'list' 字段，不同于标准的 'data' 字段
+    tenantList.value = (data as any).list || data.data || []
+    total.value = data.total || 0
   } catch (error) {
     ElMessage.error('加载租户列表失败')
     console.error(error)

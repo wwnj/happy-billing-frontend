@@ -3,6 +3,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import PriceDisplay from '@/components/common/PriceDisplay/index.vue'
+import { getPaymentList } from '@/api/modules/payment'
 import type { Payment, PaymentMethod, PaymentStatus } from '@/types/api/payment'
 
 const router = useRouter()
@@ -45,59 +46,9 @@ const loadPaymentList = async () => {
   loading.value = true
 
   try {
-    // 模拟数据
-    const mockPayments: Payment[] = [
-      {
-        payment_id: 'pay_001',
-        order_id: 'order_002',
-        tenant_id: 'tenant_demo_001',
-        user_id: 'user_demo_001',
-        payment_method: 'BALANCE',
-        currency: 'USD',
-        exchange_rate: 7.22,
-        base_currency: 'CNY',
-        base_currency_amount: 722,
-        amount: 100,
-        status: 'SUCCESS',
-        paid_at: '2026-01-16T14:25:00Z',
-        created_at: '2026-01-16T14:24:00Z',
-        updated_at: '2026-01-16T14:25:00Z',
-      },
-      {
-        payment_id: 'pay_002',
-        order_id: 'order_003',
-        tenant_id: 'tenant_demo_001',
-        user_id: 'user_demo_001',
-        payment_method: 'BALANCE',
-        currency: 'CNY',
-        exchange_rate: 1,
-        base_currency: 'CNY',
-        base_currency_amount: 100,
-        amount: 100,
-        status: 'SUCCESS',
-        paid_at: '2026-01-15T09:20:00Z',
-        created_at: '2026-01-15T09:19:00Z',
-        updated_at: '2026-01-15T09:20:00Z',
-      },
-      {
-        payment_id: 'pay_003',
-        order_id: 'order_001',
-        tenant_id: 'tenant_demo_001',
-        user_id: 'user_demo_001',
-        payment_method: 'ALIPAY',
-        currency: 'USD',
-        exchange_rate: 7.22,
-        base_currency: 'CNY',
-        base_currency_amount: 361,
-        amount: 50,
-        status: 'PENDING',
-        created_at: '2026-01-17T10:35:00Z',
-        updated_at: '2026-01-17T10:35:00Z',
-      },
-    ]
-
-    paymentList.value = mockPayments
-    total.value = mockPayments.length
+    const { data } = await getPaymentList(queryParams)
+    paymentList.value = data.data || []
+    total.value = data.total || 0
   } catch (error) {
     ElMessage.error('加载支付记录失败')
     console.error(error)

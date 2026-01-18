@@ -3,6 +3,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import BalanceCard from '@/components/common/BalanceCard/index.vue'
 import PriceDisplay from '@/components/common/PriceDisplay/index.vue'
+import { getBalance, rechargeBalance } from '@/api/modules/payment'
 import type { AccountBalance, BalanceRecord } from '@/types/api/payment'
 import type { Currency } from '@/types/api/currency'
 
@@ -37,17 +38,8 @@ const loadBalance = async () => {
   loading.value = true
 
   try {
-    // 模拟数据
-    const mockBalance: AccountBalance = {
-      tenant_id: 'tenant_demo_001',
-      balance: 1000,
-      frozen_balance: 50,
-      credit_limit: 500,
-      currency: 'CNY',
-      created_at: '2026-01-01T00:00:00Z',
-      updated_at: '2026-01-17T10:00:00Z',
-    }
-    balance.value = mockBalance
+    const { data } = await getBalance(queryParams.tenant_id)
+    balance.value = data
   } catch (error) {
     ElMessage.error('加载余额信息失败')
     console.error(error)
@@ -58,12 +50,18 @@ const loadBalance = async () => {
 
 /**
  * 加载余额变动记录
+ * 注意：此接口后端尚未实现，暂时使用 mock 数据
  */
 const loadBalanceHistory = async () => {
   historyLoading.value = true
 
   try {
-    // 模拟数据
+    // TODO: 等待后端实现 /api/v1/tenants/:tenant_id/balance/transactions 接口
+    // const { data } = await getBalanceHistory(queryParams.tenant_id, queryParams)
+    // balanceHistory.value = data.data || []
+    // total.value = data.total || 0
+
+    // 临时使用 mock 数据
     const mockHistory: BalanceRecord[] = [
       {
         record_id: 'record_001',
@@ -131,8 +129,10 @@ const handleConfirmRecharge = async () => {
   recharging.value = true
 
   try {
-    // 模拟充值
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    // 调用充值API
+    await rechargeBalance(queryParams.tenant_id, {
+      amount: rechargeForm.amount,
+    })
 
     ElMessage.success('充值成功')
     rechargeDialogVisible.value = false

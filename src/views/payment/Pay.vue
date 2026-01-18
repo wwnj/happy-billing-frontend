@@ -4,6 +4,8 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import PriceDisplay from '@/components/common/PriceDisplay/index.vue'
 import ExchangeRateInfo from '@/components/common/ExchangeRateInfo/index.vue'
+import { getOrderDetail } from '@/api/modules/order'
+import { getBalance, createPayment } from '@/api/modules/payment'
 import type { Order } from '@/types/api/order'
 import type { AccountBalance, PaymentMethod } from '@/types/api/payment'
 
@@ -53,55 +55,9 @@ const loadOrderDetail = async () => {
   loading.value = true
 
   try {
-    // 模拟订单数据
-    const mockOrders: Record<string, Order> = {
-      order_001: {
-        order_id: 'order_001',
-        order_no: 'ORD20260117001',
-        tenant_id: 'tenant_demo_001',
-        organization_id: 'org_demo_001',
-        project_id: 'proj_demo_001',
-        user_id: 'user_demo_001',
-        order_type: 'PREPAID',
-        spu_code: 'spu_vm_001',
-        sku_code: 'sku_vm_001',
-        currency: 'USD',
-        exchange_rate: 7.22,
-        base_currency: 'CNY',
-        base_currency_amount: 361,
-        original_amount: 50,
-        discount_amount: 0,
-        payable_amount: 50,
-        paid_amount: 0,
-        status: 'PENDING',
-        created_at: '2026-01-17T10:30:00Z',
-        updated_at: '2026-01-17T10:30:00Z',
-      },
-      order_002: {
-        order_id: 'order_002',
-        order_no: 'ORD20260117002',
-        tenant_id: 'tenant_demo_001',
-        organization_id: 'org_demo_001',
-        project_id: 'proj_demo_001',
-        user_id: 'user_demo_001',
-        order_type: 'PREPAID',
-        spu_code: 'spu_vm_002',
-        sku_code: 'sku_vm_002',
-        currency: 'USD',
-        exchange_rate: 7.22,
-        base_currency: 'CNY',
-        base_currency_amount: 722,
-        original_amount: 100,
-        discount_amount: 0,
-        payable_amount: 100,
-        paid_amount: 0,
-        status: 'PENDING',
-        created_at: '2026-01-16T14:20:00Z',
-        updated_at: '2026-01-16T14:25:00Z',
-      },
-    }
-
-    order.value = mockOrders[orderId.value] || null
+    // 加载订单信息
+    const { data: orderData } = await getOrderDetail(orderId.value)
+    order.value = orderData
 
     if (!order.value) {
       ElMessage.error('订单不存在')
@@ -116,16 +72,8 @@ const loadOrderDetail = async () => {
     }
 
     // 加载账户余额
-    const mockBalance: AccountBalance = {
-      tenant_id: 'tenant_demo_001',
-      balance: 1000,
-      frozen_balance: 50,
-      credit_limit: 500,
-      currency: 'CNY',
-      created_at: '2026-01-01T00:00:00Z',
-      updated_at: '2026-01-17T10:00:00Z',
-    }
-    balance.value = mockBalance
+    const { data: balanceData } = await getBalance(order.value.tenant_id)
+    balance.value = balanceData
   } catch (error) {
     ElMessage.error('加载订单信息失败')
     console.error(error)
@@ -159,8 +107,15 @@ const handlePay = async () => {
 
     paying.value = true
 
-    // 调用支付API（模拟）
-    await new Promise(resolve => setTimeout(resolve, 1500))
+    // 调用支付API
+    await createPayment({
+      order_id: order.value.order_id,
+      tenant_id: order.value.tenant_id,
+      user_id: order.value.user_id,
+      payment_method: selectedPaymentMethod.value,
+      currency: order.value.currency,
+      amount: order.value.payable_amount,
+    })
 
     ElMessage.success('支付成功')
     router.push(`/order/detail/${orderId.value}`)

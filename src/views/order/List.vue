@@ -3,7 +3,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import PriceDisplay from '@/components/common/PriceDisplay/index.vue'
-import { getOrderList as _unused, cancelOrder } from '@/api/modules/order'
+import { getOrderList, cancelOrder } from '@/api/modules/order'
 import type { Order, OrderStatus } from '@/types/api/order'
 import type { Currency } from '@/types/api/currency'
 
@@ -49,81 +49,9 @@ const loadOrderList = async () => {
   loading.value = true
 
   try {
-    // 模拟数据（实际应该调用API）
-    // const { data } = await getOrderList(queryParams)
-
-    // 使用模拟数据
-    const mockOrders: Order[] = [
-      {
-        order_id: 'order_001',
-        order_no: 'ORD20260117001',
-        tenant_id: 'tenant_demo_001',
-        organization_id: 'org_demo_001',
-        project_id: 'proj_demo_001',
-        user_id: 'user_demo_001',
-        order_type: 'PREPAID',
-        spu_code: 'spu_vm_001',
-        sku_code: 'sku_vm_001',
-        currency: 'USD',
-        exchange_rate: 7.22,
-        base_currency: 'CNY',
-        base_currency_amount: 361,
-        original_amount: 50,
-        discount_amount: 0,
-        payable_amount: 50,
-        paid_amount: 0,
-        status: 'PENDING',
-        created_at: '2026-01-17T10:30:00Z',
-        updated_at: '2026-01-17T10:30:00Z',
-      },
-      {
-        order_id: 'order_002',
-        order_no: 'ORD20260117002',
-        tenant_id: 'tenant_demo_001',
-        organization_id: 'org_demo_001',
-        project_id: 'proj_demo_001',
-        user_id: 'user_demo_001',
-        order_type: 'PREPAID',
-        spu_code: 'spu_vm_002',
-        sku_code: 'sku_vm_002',
-        currency: 'USD',
-        exchange_rate: 7.22,
-        base_currency: 'CNY',
-        base_currency_amount: 722,
-        original_amount: 100,
-        discount_amount: 0,
-        payable_amount: 100,
-        paid_amount: 100,
-        status: 'PAID',
-        created_at: '2026-01-16T14:20:00Z',
-        updated_at: '2026-01-16T14:25:00Z',
-      },
-      {
-        order_id: 'order_003',
-        order_no: 'ORD20260117003',
-        tenant_id: 'tenant_demo_001',
-        organization_id: 'org_demo_001',
-        project_id: 'proj_demo_001',
-        user_id: 'user_demo_001',
-        order_type: 'PREPAID',
-        spu_code: 'spu_storage_001',
-        sku_code: 'sku_storage_001',
-        currency: 'CNY',
-        exchange_rate: 1,
-        base_currency: 'CNY',
-        base_currency_amount: 100,
-        original_amount: 100,
-        discount_amount: 0,
-        payable_amount: 100,
-        paid_amount: 100,
-        status: 'PAID',
-        created_at: '2026-01-15T09:15:00Z',
-        updated_at: '2026-01-15T09:20:00Z',
-      },
-    ]
-
-    orderList.value = mockOrders
-    total.value = mockOrders.length
+    const { data } = await getOrderList(queryParams)
+    orderList.value = data.data || []
+    total.value = data.total || 0
   } catch (error) {
     ElMessage.error('加载订单列表失败')
     console.error(error)

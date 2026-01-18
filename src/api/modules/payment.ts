@@ -48,9 +48,10 @@ export const recharge = (tenantId: string, data: { amount: number }) => {
 export const rechargeBalance = recharge
 
 /**
- * 获取余额变动记录
+ * 获取余额变动记录（注意：此接口在后端路由中未定义，暂时使用占位实现）
  */
 export const getBalanceTransactions = (tenantId: string, params: any) => {
+  // TODO: 等待后端实现此接口
   return request.get<PageResult<BalanceTransaction>>(
     `/api/v1/tenants/${tenantId}/balance/transactions`,
     params

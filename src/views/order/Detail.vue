@@ -4,7 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import PriceDisplay from '@/components/common/PriceDisplay/index.vue'
 import ExchangeRateInfo from '@/components/common/ExchangeRateInfo/index.vue'
-import { getOrderDetail as _unused, cancelOrder } from '@/api/modules/order'
+import { getOrderDetail, cancelOrder } from '@/api/modules/order'
 import type { Order } from '@/types/api/order'
 
 const route = useRoute()
@@ -25,80 +25,8 @@ const loadOrderDetail = async () => {
   loading.value = true
 
   try {
-    // 模拟数据（实际应该调用API）
-    // const { data } = await getOrderDetail(orderId.value)
-
-    // 使用模拟数据
-    const mockOrders: Record<string, Order> = {
-      order_001: {
-        order_id: 'order_001',
-        order_no: 'ORD20260117001',
-        tenant_id: 'tenant_demo_001',
-        organization_id: 'org_demo_001',
-        project_id: 'proj_demo_001',
-        user_id: 'user_demo_001',
-        order_type: 'PREPAID',
-        spu_code: 'spu_vm_001',
-        sku_code: 'sku_vm_001',
-        currency: 'USD',
-        exchange_rate: 7.22,
-        base_currency: 'CNY',
-        base_currency_amount: 361,
-        original_amount: 50,
-        discount_amount: 0,
-        payable_amount: 50,
-        paid_amount: 0,
-        status: 'PENDING',
-        created_at: '2026-01-17T10:30:00Z',
-        updated_at: '2026-01-17T10:30:00Z',
-      },
-      order_002: {
-        order_id: 'order_002',
-        order_no: 'ORD20260117002',
-        tenant_id: 'tenant_demo_001',
-        organization_id: 'org_demo_001',
-        project_id: 'proj_demo_001',
-        user_id: 'user_demo_001',
-        order_type: 'PREPAID',
-        spu_code: 'spu_vm_002',
-        sku_code: 'sku_vm_002',
-        currency: 'USD',
-        exchange_rate: 7.22,
-        base_currency: 'CNY',
-        base_currency_amount: 722,
-        original_amount: 100,
-        discount_amount: 0,
-        payable_amount: 100,
-        paid_amount: 100,
-        status: 'PAID',
-        created_at: '2026-01-16T14:20:00Z',
-        updated_at: '2026-01-16T14:25:00Z',
-      },
-      order_003: {
-        order_id: 'order_003',
-        order_no: 'ORD20260117003',
-        tenant_id: 'tenant_demo_001',
-        organization_id: 'org_demo_001',
-        project_id: 'proj_demo_001',
-        user_id: 'user_demo_001',
-        order_type: 'PREPAID',
-        spu_code: 'spu_storage_001',
-        sku_code: 'sku_storage_001',
-        currency: 'CNY',
-        exchange_rate: 1,
-        base_currency: 'CNY',
-        base_currency_amount: 100,
-        original_amount: 100,
-        discount_amount: 0,
-        payable_amount: 100,
-        paid_amount: 100,
-        status: 'PAID',
-        created_at: '2026-01-15T09:15:00Z',
-        updated_at: '2026-01-15T09:20:00Z',
-      },
-    }
-
-    order.value = mockOrders[orderId.value] || null
+    const { data } = await getOrderDetail(orderId.value)
+    order.value = data
 
     if (!order.value) {
       ElMessage.error('订单不存在')

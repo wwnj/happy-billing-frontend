@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import BalanceCard from '@/components/common/BalanceCard/index.vue'
 import PriceDisplay from '@/components/common/PriceDisplay/index.vue'
+import { getBalance } from '@/api/modules/payment'
 import type { AccountBalance } from '@/types/api/payment'
 
 const router = useRouter()
@@ -54,15 +55,11 @@ const recentOrders = ref([
 const loadDashboardData = async () => {
   try {
     // 加载余额信息
-    balance.value = {
-      tenant_id: 'tenant_demo_001',
-      balance: 1000,
-      frozen_balance: 50,
-      credit_limit: 500,
-      currency: 'CNY',
-      created_at: '2026-01-01T00:00:00Z',
-      updated_at: '2026-01-17T10:00:00Z',
-    }
+    const { data } = await getBalance('tenant_demo_001')
+    balance.value = data
+
+    // TODO: 加载统计数据（需要后端提供统计API）
+    // 当前 stats 数据保留为 mock，等待后端实现统计接口
   } catch (error) {
     ElMessage.error('加载数据失败')
     console.error(error)

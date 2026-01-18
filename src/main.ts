@@ -9,6 +9,7 @@ import '@/assets/styles/reset.scss'
 
 import App from './App.vue'
 import router from './router'
+import { setupErrorHandler } from './utils/errorHandler'
 
 // 国际化配置
 import zhCN from './locales/zh-CN'
@@ -26,6 +27,11 @@ const i18n = createI18n({
 
 const app = createApp(App)
 
+// 全局错误处理
+app.config.errorHandler = (err, _instance, info) => {
+  console.error('[Vue Error Handler]:', err, info)
+}
+
 // 注册 Element Plus 图标
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
   app.component(key, component)
@@ -35,5 +41,8 @@ app.use(createPinia())
 app.use(router)
 app.use(ElementPlus)
 app.use(i18n)
+
+// 安装全局错误处理
+setupErrorHandler()
 
 app.mount('#app')
