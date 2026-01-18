@@ -1,0 +1,25 @@
+export default {
+  common: {
+    confirm: '确定',
+    cancel: '取消',
+    save: '保存',
+    delete: '删除',
+    edit: '编辑',
+    search: '搜索',
+    reset: '重置',
+    submit: '提交',
+    back: '返回',
+    loading: '加载中...',
+    success: '操作成功',
+    error: '操作失败',
+  },
+  menu: {
+    dashboard: '仪表盘',
+    tenant: '租户管理',
+    product: '产品管理',
+    order: '订单管理',
+    billing: '账单管理',
+    payment: '支付管理',
+    currency: '货币管理',
+  },
+}

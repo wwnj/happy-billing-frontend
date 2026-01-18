@@ -1,0 +1,25 @@
+export default {
+  common: {
+    confirm: 'Confirm',
+    cancel: 'Cancel',
+    save: 'Save',
+    delete: 'Delete',
+    edit: 'Edit',
+    search: 'Search',
+    reset: 'Reset',
+    submit: 'Submit',
+    back: 'Back',
+    loading: 'Loading...',
+    success: 'Success',
+    error: 'Error',
+  },
+  menu: {
+    dashboard: 'Dashboard',
+    tenant: 'Tenant Management',
+    product: 'Product Management',
+    order: 'Order Management',
+    billing: 'Billing Management',
+    payment: 'Payment Management',
+    currency: 'Currency Management',
+  },
+}
