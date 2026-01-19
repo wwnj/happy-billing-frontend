@@ -80,7 +80,8 @@ const calculatePrice = async () => {
 
   try {
     // 计算原始价格
-    const basePrice = selectedSku.value.unit_price * form.quantity
+    const unitPrice = selectedSku.value.unit_price || 0
+    const basePrice = unitPrice * form.quantity
     priceInfo.originalPrice = basePrice
     priceInfo.discountAmount = 0
     priceInfo.finalPrice = basePrice
