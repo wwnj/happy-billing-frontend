@@ -1,18 +1,21 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import BalanceCard from '@/components/common/BalanceCard/index.vue'
 import PriceDisplay from '@/components/common/PriceDisplay/index.vue'
-import { getBalance, rechargeBalance } from '@/api/modules/payment'
-import type { AccountBalance, BalanceRecord } from '@/types/api/payment'
+import { getBalance, rechargeBalance, getBalanceTransactions } from '@/api/modules/payment'
+import type { AccountBalance, BalanceTransaction } from '@/types/api/payment'
 import type { Currency } from '@/types/api/currency'
+
+const router = useRouter()
 
 // 账户余额
 const balance = ref<AccountBalance | null>(null)
 const loading = ref(false)
 
 // 余额变动记录
-const balanceHistory = ref<BalanceRecord[]>([])
+const balanceHistory = ref<BalanceTransaction[]>([])
 const historyLoading = ref(false)
 const total = ref(0)
 
@@ -50,56 +53,17 @@ const loadBalance = async () => {
 
 /**
  * 加载余额变动记录
- * 注意：此接口后端尚未实现，暂时使用 mock 数据
  */
 const loadBalanceHistory = async () => {
   historyLoading.value = true
 
   try {
-    // TODO: 等待后端实现 /api/v1/tenants/:tenant_id/balance/transactions 接口
-    // const { data } = await getBalanceHistory(queryParams.tenant_id, queryParams)
-    // balanceHistory.value = data.data || []
-    // total.value = data.total || 0
-
-    // 临时使用 mock 数据
-    const mockHistory: BalanceRecord[] = [
-      {
-        record_id: 'record_001',
-        tenant_id: 'tenant_demo_001',
-        amount: 1000,
-        balance_before: 0,
-        balance_after: 1000,
-        type: 'RECHARGE',
-        related_order_id: undefined,
-        description: '账户充值',
-        created_at: '2026-01-15T10:00:00Z',
-      },
-      {
-        record_id: 'record_002',
-        tenant_id: 'tenant_demo_001',
-        amount: -100,
-        balance_before: 1000,
-        balance_after: 900,
-        type: 'PAYMENT',
-        related_order_id: 'order_003',
-        description: '订单支付 - ORD20260117003',
-        created_at: '2026-01-15T09:20:00Z',
-      },
-      {
-        record_id: 'record_003',
-        tenant_id: 'tenant_demo_001',
-        amount: 100,
-        balance_before: 900,
-        balance_after: 1000,
-        type: 'REFUND',
-        related_order_id: 'order_004',
-        description: '订单退款 - ORD20260115001',
-        created_at: '2026-01-16T14:30:00Z',
-      },
-    ]
-
-    balanceHistory.value = mockHistory
-    total.value = mockHistory.length
+    const { data } = await getBalanceTransactions(queryParams.tenant_id, {
+      page: queryParams.page,
+      page_size: queryParams.page_size,
+    })
+    balanceHistory.value = data.data || []
+    total.value = data.total || 0
   } catch (error) {
     ElMessage.error('加载余额变动记录失败')
     console.error(error)
@@ -150,10 +114,14 @@ const handleConfirmRecharge = async () => {
 /**
  * 查看变动记录详情
  */
-const handleViewRecord = (record: BalanceRecord) => {
+const handleViewRecord = (record: BalanceTransaction) => {
   if (record.related_order_id) {
-    // 如果有关联订单，跳转到订单详情
-    window.open(`/order/detail/${record.related_order_id}`, '_blank')
+    // 使用 router 生成完整路径，然后在新标签页打开
+    const routeData = router.resolve({
+      name: 'OrderDetail',
+      params: { id: record.related_order_id }
+    })
+    window.open(routeData.href, '_blank')
   } else {
     ElMessage.info('该记录无关联订单')
   }
@@ -165,7 +133,7 @@ const handleViewRecord = (record: BalanceRecord) => {
 const getTypeTagType = (type: string) => {
   const map: Record<string, any> = {
     RECHARGE: 'success',
-    PAYMENT: 'warning',
+    DEDUCT: 'warning',
     REFUND: 'info',
     FREEZE: 'danger',
     UNFREEZE: 'success',
@@ -179,7 +147,7 @@ const getTypeTagType = (type: string) => {
 const getTypeText = (type: string) => {
   const map: Record<string, string> = {
     RECHARGE: '充值',
-    PAYMENT: '支付',
+    DEDUCT: '扣减',
     REFUND: '退款',
     FREEZE: '冻结',
     UNFREEZE: '解冻',
@@ -252,11 +220,11 @@ onMounted(() => {
         v-loading="historyLoading"
         stripe
       >
-        <el-table-column prop="record_id" label="记录ID" width="180" />
+        <el-table-column prop="transaction_id" label="记录ID" width="180" />
         <el-table-column label="变动类型" width="100">
           <template #default="{ row }">
-            <el-tag :type="getTypeTagType(row.type)">
-              {{ getTypeText(row.type) }}
+            <el-tag :type="getTypeTagType(row.transaction_type)">
+              {{ getTypeText(row.transaction_type) }}
             </el-tag>
           </template>
         </el-table-column>
@@ -290,7 +258,7 @@ onMounted(() => {
             />
           </template>
         </el-table-column>
-        <el-table-column prop="description" label="说明" min-width="200" />
+        <el-table-column prop="remark" label="说明" min-width="200" />
         <el-table-column label="创建时间" width="180">
           <template #default="{ row }">
             {{ formatDateTime(row.created_at) }}

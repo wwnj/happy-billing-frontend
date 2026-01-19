@@ -6,8 +6,10 @@ import PriceDisplay from '@/components/common/PriceDisplay/index.vue'
 import CurrencySelector from '@/components/common/CurrencySelector/index.vue'
 import { createOrder } from '@/api/modules/order'
 import { convertCurrency } from '@/api/modules/currency'
+import { getSkuListWithPrice } from '@/api/modules/product'
 import type { CreateOrderRequest } from '@/types/api/order'
 import type { Currency } from '@/types/api/currency'
+import type { SkuWithPrice } from '@/types/api/product'
 
 const router = useRouter()
 
@@ -23,14 +25,9 @@ const form = reactive<CreateOrderRequest & { currency: Currency }>({
   currency: 'USD',
 })
 
-// 可选的 SKU 列表（示例数据）
-const skuOptions = ref([
-  { code: 'sku_vm_001', name: 'VM Standard 2C4G', unit_price: 50, currency: 'USD' },
-  { code: 'sku_vm_002', name: 'VM Standard 4C8G', unit_price: 100, currency: 'USD' },
-  { code: 'sku_vm_003', name: 'VM Standard 8C16G', unit_price: 200, currency: 'USD' },
-  { code: 'sku_storage_001', name: 'SSD Storage 100GB', unit_price: 10, currency: 'USD' },
-  { code: 'sku_bandwidth_001', name: 'Bandwidth 100Mbps', unit_price: 30, currency: 'USD' },
-])
+// SKU 列表
+const skuOptions = ref<SkuWithPrice[]>([])
+const skuLoading = ref(false)
 
 // 价格信息
 const priceInfo = reactive({
@@ -48,7 +45,7 @@ const submitting = ref(false)
 
 // 当前选中的 SKU
 const selectedSku = computed(() => {
-  return skuOptions.value.find(sku => sku.code === form.sku_code)
+  return skuOptions.value.find(sku => sku.sku_code === form.sku_code)
 })
 
 // SKU 改变时重新计算价格
@@ -160,9 +157,27 @@ const handleSubmit = async () => {
   }
 }
 
+/**
+ * 加载 SKU 列表
+ */
+const loadSkuList = async () => {
+  skuLoading.value = true
+
+  try {
+    const skuList = await getSkuListWithPrice()
+    // 过滤出有价格的 SKU
+    skuOptions.value = skuList.filter(sku => sku.unit_price !== undefined)
+  } catch (error) {
+    ElMessage.error('加载产品列表失败')
+    console.error(error)
+  } finally {
+    skuLoading.value = false
+  }
+}
+
 // 初始化
 onMounted(() => {
-  // 可以在这里加载租户信息、获取偏好货币等
+  loadSkuList()
 })
 </script>
 
@@ -185,17 +200,18 @@ onMounted(() => {
           <el-select
             v-model="form.sku_code"
             placeholder="请选择产品 SKU"
+            :loading="skuLoading"
             style="width: 100%"
             @change="handleSkuChange"
           >
             <el-option
               v-for="sku in skuOptions"
-              :key="sku.code"
-              :value="sku.code"
-              :label="sku.name"
+              :key="sku.sku_code"
+              :value="sku.sku_code"
+              :label="sku.sku_name"
             >
               <div class="sku-option">
-                <span class="sku-name">{{ sku.name }}</span>
+                <span class="sku-name">{{ sku.sku_name }}</span>
                 <span class="sku-price">{{ sku.unit_price }} {{ sku.currency }}</span>
               </div>
             </el-option>
