@@ -271,6 +271,10 @@ onMounted(() => {
 
   .search-bar {
     margin-bottom: 20px;
+
+    :deep(.el-select) {
+      width: 200px;
+    }
   }
 
   .current-rates {

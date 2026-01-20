@@ -112,22 +112,6 @@ const handleConfirmRecharge = async () => {
 }
 
 /**
- * 查看变动记录详情
- */
-const handleViewRecord = (record: BalanceTransaction) => {
-  if (record.related_order_id) {
-    // 使用 router 生成完整路径，然后在新标签页打开
-    const routeData = router.resolve({
-      name: 'OrderDetail',
-      params: { id: record.related_order_id }
-    })
-    window.open(routeData.href, '_blank')
-  } else {
-    ElMessage.info('该记录无关联订单')
-  }
-}
-
-/**
  * 获取变动类型标签类型
  */
 const getTypeTagType = (type: string) => {
@@ -258,22 +242,23 @@ onMounted(() => {
             />
           </template>
         </el-table-column>
-        <el-table-column prop="remark" label="说明" min-width="200" />
+        <el-table-column prop="remark" label="说明" min-width="150" />
+        <el-table-column label="关联订单" width="160">
+          <template #default="{ row }">
+            <router-link
+              v-if="row.related_order_id"
+              :to="`/order/detail/${row.related_order_id}`"
+              class="order-link"
+              target="_blank"
+            >
+              {{ row.related_order_id }}
+            </router-link>
+            <span v-else class="no-order">-</span>
+          </template>
+        </el-table-column>
         <el-table-column label="创建时间" width="180">
           <template #default="{ row }">
             {{ formatDateTime(row.created_at) }}
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" width="120" fixed="right">
-          <template #default="{ row }">
-            <el-button
-              v-if="row.related_order_id"
-              link
-              type="primary"
-              @click="handleViewRecord(row)"
-            >
-              查看订单
-            </el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -369,6 +354,20 @@ onMounted(() => {
     margin-top: 8px;
     font-size: 12px;
     color: #909399;
+  }
+
+  .order-link {
+    color: #409eff;
+    text-decoration: none;
+    font-size: 13px;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .no-order {
+    color: #c0c4cc;
   }
 
   // 移动端适配
